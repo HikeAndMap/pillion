@@ -4,6 +4,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.KeyguardManager
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.graphics.drawable.Icon
 import android.app.Service
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
@@ -43,6 +45,7 @@ class CaptureService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var engine: MirrorEngine? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var screenWakeLock: PowerManager.WakeLock? = null
     private var dashEnabled = false
     private var dashSwitch: SwitchableScreenSource? = null
     private var screenReceiver: BroadcastReceiver? = null
@@ -53,16 +56,28 @@ class CaptureService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
+            _state.value = MirrorState.Idle // a user stop clears any earlier error
             stopSelf()
+            return START_NOT_STICKY
+        }
+        // A second Start while a session runs would open a second Bluetooth link (the dash refuses it)
+        // and tear the first session down. Ignore it and drop the unused single-use capture grant.
+        if (engine != null && _state.value !is MirrorState.Error) {
+            Log.w(TAG, "start ignored: a session is already running")
+            resultCode = 0; resultData = null
             return START_NOT_STICKY
         }
         acquireWakeLock()
         _state.value = MirrorState.Connecting
+        DebugLogFile.snapshot(this, "session start") // permissions are granted by now; lists bonded devices
 
         val quality = intent?.getIntExtra(EXTRA_QUALITY, 40) ?: 40
         val maxFps = intent?.getIntExtra(EXTRA_MAX_FPS, 15) ?: 15
         val dashResolution = dashResolutionFrom(intent)
         dashEnabled = intent?.getBooleanExtra(EXTRA_DASH_ENABLED, false) ?: false
+        // Plain mirroring captures the physical display, which stops drawing when the screen turns
+        // off. Keep it on (dimmed) for the session; dash mode renders off-screen so it doesn't need this.
+        if (!dashEnabled) acquireScreenWakeLock()
         startSession(quality, maxFps, dashResolution)
         return START_NOT_STICKY
     }
@@ -117,15 +132,20 @@ class CaptureService : Service() {
                     )
                 }
                     .onFailure {
-                        Log.e(TAG, "dash: helper unavailable", it)
-                        fail(it.message ?: "Dash helper unavailable")
+                        // Don't kill a working Bluetooth session over this: keep plain mirroring and
+                        // hold the screen on, since without the helper a locked screen means a black dash.
+                        Log.e(TAG, "dash: helper unavailable; falling back to plain mirroring", it)
+                        acquireScreenWakeLock()
+                        updateNotification("Dash helper unavailable — mirroring with screen on")
                     }
+                // Self-heal: if the helper is killed (adbd restart on Wi-Fi/debug loss), respawn it over
+                // the loopback channel so the dash recovers instead of freezing. Started here, after
+                // ensureRunning, because both take DashHelper's lock: calling it from the main thread
+                // blocked the UI for the whole ADB connect timeout (15 s).
+                DashHelper.startWatchdog(this@CaptureService, quality, dashResolution)
             }
             registerScreenReceiver()
             registerKeyguardUnlockListener()
-            // Self-heal: if the helper is killed (adbd restart on Wi-Fi/debug loss), respawn it over
-            // the loopback channel so the dash recovers instead of freezing.
-            DashHelper.startWatchdog(this, quality, dashResolution)
             switch
         } else {
             mirror
@@ -340,6 +360,7 @@ class CaptureService : Service() {
                 _state.value = state
                 when (state) {
                     is MirrorState.Streaming -> updateNotification("Streaming — ${state.kbPerFrame} KB/frame")
+                    is MirrorState.Reconnecting -> updateNotification("Reconnecting to the bike…")
                     is MirrorState.Error -> { updateNotification(state.message); stopSelf() }
                     else -> {}
                 }
@@ -367,6 +388,9 @@ class CaptureService : Service() {
     }
 
     override fun onDestroy() {
+        // Remember a failure so the UI can still show why the session ended; engine.stop() below
+        // would otherwise publish Idle over it.
+        val finalState = _state.value as? MirrorState.Error
         engine?.stop()
         DashHelper.stopWatchdog() // stop first, so it doesn't respawn the helper we're tearing down
         screenReceiver?.let { runCatching { unregisterReceiver(it) } }
@@ -381,8 +405,19 @@ class CaptureService : Service() {
         }.start()
         scope.cancel()
         releaseWakeLock()
-        _state.value = MirrorState.Idle
+        _state.value = finalState ?: MirrorState.Idle
         super.onDestroy()
+    }
+
+    /**
+     * Pillion's card was swiped out of recents — the user closed the app, so end the session instead
+     * of leaving a hidden stream running. Switching to another app or home does not remove the task.
+     */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        Log.d(TAG, "task removed (app closed from recents); stopping session")
+        _state.value = MirrorState.Idle
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -397,9 +432,22 @@ class CaptureService : Service() {
         }
     }
 
+    /** Keeps the screen on at dim brightness (no auto-lock) so the mirrored display keeps rendering. */
+    @Suppress("DEPRECATION") // SCREEN_DIM_WAKE_LOCK is deprecated for activities but still honoured for services
+    private fun acquireScreenWakeLock() {
+        if (screenWakeLock?.isHeld == true) return
+        val pm = getSystemService(PowerManager::class.java)
+        screenWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "pillion:screen").apply {
+            setReferenceCounted(false)
+            acquire(MAX_SESSION_MS)
+        }
+    }
+
     private fun releaseWakeLock() {
         wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
+        screenWakeLock?.let { if (it.isHeld) it.release() }
+        screenWakeLock = null
     }
 
     /** Foreground with the right service type: mediaProjection for mirror, connectedDevice for dash. */
@@ -417,10 +465,22 @@ class CaptureService : Service() {
             getSystemService(NotificationManager::class.java).createNotificationChannel(
                 NotificationChannel(CHANNEL_ID, "Pillion", NotificationManager.IMPORTANCE_LOW),
             )
+            val stop = PendingIntent.getService(
+                this, 0,
+                Intent(this, CaptureService::class.java).setAction(ACTION_STOP),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
             Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("Pillion — mirroring to dash")
                 .setContentText(text)
                 .setSmallIcon(android.R.drawable.ic_menu_share)
+                .addAction(
+                    Notification.Action.Builder(
+                        Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel),
+                        "Stop",
+                        stop,
+                    ).build(),
+                )
                 .build()
         } else {
             @Suppress("DEPRECATION")
@@ -442,7 +502,7 @@ class CaptureService : Service() {
         private const val NOTIF_ID = 1
         private const val CHANNEL_ID = "pillion"
         private const val TAG = "Pillion"
-        private const val MAX_SESSION_MS = 3L * 60 * 60 * 1000 // 3h safety cap
+        private const val MAX_SESSION_MS = 16L * 60 * 60 * 1000 // 16h safety cap (a long touring day)
         private const val RETURN_TO_PHONE_GRACE_MS = 3_000L
         private const val LOCK_STATE_SAMPLE_DELAY_MS = 250L
         private const val PERMISSION_SUBSCRIBE_KEYGUARD =
