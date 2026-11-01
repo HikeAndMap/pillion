@@ -4,6 +4,9 @@ package app.pillion.core
 sealed interface MirrorState {
     data object Idle : MirrorState
     data object Connecting : MirrorState
+
+    /** The link to the dash was lost or isn't up yet; the engine is retrying on its own. */
+    data object Reconnecting : MirrorState
     data class Streaming(val fps: Double, val kbPerFrame: Int) : MirrorState
 
     /**

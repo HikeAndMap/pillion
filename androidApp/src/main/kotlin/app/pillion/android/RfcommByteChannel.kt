@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import app.pillion.core.ByteChannel
+import app.pillion.core.DashUnreachableException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
@@ -35,8 +36,9 @@ class RfcommByteChannel : ByteChannel {
         var lastError: Throwable? = null
         for (dash in candidates) {
             Log.d("Pillion", "rfcomm: connecting to ${dash.name}")
+            var s: BluetoothSocket? = null
             try {
-                val s = dash.createInsecureRfcommSocketToServiceRecord(SPP_UUID)
+                s = dash.createInsecureRfcommSocketToServiceRecord(SPP_UUID)
                 s.connect()
                 socket = s
                 input = s.inputStream
@@ -46,10 +48,10 @@ class RfcommByteChannel : ByteChannel {
             } catch (t: Throwable) {
                 lastError = t
                 Log.d("Pillion", "rfcomm: ${dash.name} unreachable (${t.message}); trying next")
-                runCatching { socket?.close() }
+                runCatching { s?.close() } // the socket that just failed, not the previous field value
             }
         }
-        throw lastError ?: IllegalStateException("no CCU dash connectable")
+        throw DashUnreachableException(lastError?.message ?: "no CCU dash connectable", lastError)
     }
 
     override fun write(bytes: ByteArray) {

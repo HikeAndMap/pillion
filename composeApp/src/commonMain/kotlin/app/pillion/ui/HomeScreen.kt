@@ -146,6 +146,22 @@ private fun StatusDisplay(state: MirrorState) {
                 Spacer(Modifier.height(16.dp))
                 Text("Connecting to dash…", style = MaterialTheme.typography.titleMedium)
             }
+            MirrorState.Reconnecting -> {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 3.dp,
+                    modifier = Modifier.size(34.dp),
+                )
+                Spacer(Modifier.height(16.dp))
+                Text("Reconnecting to the bike…", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Nothing to do — it connects by itself once the bike is on and the dash shows Navigation.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
             is MirrorState.Streaming -> {
                 Text(
                     formatFps(state.fps),
@@ -248,7 +264,7 @@ private fun StepRow(number: Int, text: String) {
 @Composable
 private fun PrimaryButton(state: MirrorState, onStart: () -> Unit, onStop: () -> Unit) {
     val active = state is MirrorState.Streaming || state is MirrorState.Connecting ||
-        state is MirrorState.Broadcasting
+        state is MirrorState.Reconnecting || state is MirrorState.Broadcasting
     Button(
         onClick = if (active) onStop else onStart,
         modifier = Modifier.fillMaxWidth().height(56.dp),
