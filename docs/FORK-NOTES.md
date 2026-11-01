@@ -86,10 +86,11 @@ make it warm), and lower Pillion's quality / fps if it overheats.
 Pillion writes its own log (Pillion messages, Bluetooth, crashes, the handshake and dash part number) to:
 
 ```
-/sdcard/Android/data/app.pillion/files/pillion-debug.log      (previous run: pillion-debug.log.1)
+/sdcard/Android/data/app.pillion/files/pillion-debug.log      (older full files: pillion-debug.log.1, .2, …)
 ```
 
-It rotates at ~25 MB (about 60 hours of streaming) and also records the bonded Bluetooth devices at each Start. Pull it with:
+When it reaches ~25 MB (about 60 hours of streaming) it starts a new file and keeps the full one as the
+next numbered file (nothing is overwritten; at most the 10 newest numbered files are kept). It also records the bonded Bluetooth devices at each Start. Pull it with:
 
 ```bash
 adb pull /sdcard/Android/data/app.pillion/files/pillion-debug.log

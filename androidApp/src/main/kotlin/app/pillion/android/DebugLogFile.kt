@@ -21,8 +21,9 @@ import java.util.Locale
  */
 object DebugLogFile {
     private const val FILE_NAME = "pillion-debug.log"
-    // ~400 KB/h of streaming lines: 25 MB (+ one rotated copy) covers a full-day ride.
+    // ~400 KB/h of streaming lines: 25 MB per file; full files are kept as .1, .2, … (max MAX_ROTATED).
     private const val MAX_BYTES = 25L * 1024 * 1024
+    private const val MAX_ROTATED = 10
     private var file: File? = null
     private var started = false
 
@@ -31,7 +32,7 @@ object DebugLogFile {
         if (started) return
         val dir = context.getExternalFilesDir(null) ?: return
         val f = File(dir, FILE_NAME)
-        if (f.length() > MAX_BYTES) f.renameTo(File(dir, "$FILE_NAME.1"))
+        if (f.length() > MAX_BYTES) rotate(f)
         file = f
         started = true
         Thread({ capture(f) }, "pillion-debuglog").apply { isDaemon = true }.start()
@@ -76,11 +77,27 @@ object DebugLogFile {
                 for (line in lines) {
                     synchronized(this) { f.appendText(line + "\n") }
                     if (f.length() > MAX_BYTES) synchronized(this) {
-                        f.renameTo(File(f.parentFile, "$FILE_NAME.1"))
+                        rotate(f)
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Moves the full log to the next numbered file (`pillion-debug.log.1`, `.2`, …) and never overwrites
+     * an earlier one, so nothing is lost on a long ride. Only the oldest files beyond [MAX_ROTATED]
+     * are deleted (about 250 MB in total at the default size).
+     */
+    private fun rotate(f: File) {
+        val dir = f.parentFile ?: return
+        val numbered = dir.listFiles { _, name -> name.startsWith("$FILE_NAME.") }
+            ?.mapNotNull { it.name.removePrefix("$FILE_NAME.").toIntOrNull()?.let { n -> n to it } }
+            ?.sortedBy { it.first }
+            .orEmpty()
+        val next = (numbered.lastOrNull()?.first ?: 0) + 1
+        f.renameTo(File(dir, "$FILE_NAME.$next"))
+        numbered.dropLast(MAX_ROTATED - 1).forEach { it.second.delete() }
     }
 
     private fun now(): String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
