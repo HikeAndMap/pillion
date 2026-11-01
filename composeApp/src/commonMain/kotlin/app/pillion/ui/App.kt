@@ -60,7 +60,7 @@ fun App(
         var showDashOnboarding by rememberSaveable { mutableStateOf(false) }
         var dashEnabled by remember { mutableStateOf(settingsStore?.dashEnabled() ?: false) }
         var dashResolution by remember { mutableStateOf(settingsStore?.dashResolution() ?: DashResolution.DEFAULT) }
-        var showDisclaimer by rememberSaveable { mutableStateOf(true) }
+        var showDisclaimer by rememberSaveable { mutableStateOf(false) } // local build: per-launch dialog disabled
         var update by remember { mutableStateOf<UpdateInfo?>(null) }
         var updateDismissed by rememberSaveable { mutableStateOf(false) }
         val uriHandler = LocalUriHandler.current
