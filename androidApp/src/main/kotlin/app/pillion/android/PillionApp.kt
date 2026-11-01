@@ -1,6 +1,7 @@
 package app.pillion.android
 
 import android.app.Application
+import android.os.Build
 import app.pillion.core.Logger
 import com.smartdevicelink.util.DebugTool
 
@@ -14,6 +15,10 @@ class PillionApp : Application() {
         super.onCreate()
         DebugTool.enableDebugTool()
         installSdlCrashGuard()
+        // Only the main process: the SDL router may run in its own process and would double-write.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || getProcessName() == packageName) {
+            DebugLogFile.start(this)
+        }
     }
 
     private fun installSdlCrashGuard() {
