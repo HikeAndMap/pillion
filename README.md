@@ -17,6 +17,12 @@
 > rough, and the protocol/UI may still change. **iOS support is planned.** Expect bugs, and please
 > [report them](../../issues) (especially compatibility on other bikes).
 
+> **🍴 HikeAndMap fork.** A fork of [alexandrevega/pillion](https://github.com/alexandrevega/pillion),
+> tested on the **Yamaha NMAX Tech MAX (Philippines, 2025/2026)** — OsmAnd mirrored on the dash at
+> ~13–16 fps (7–8 fps on a busy map). It adds automatic reconnect with a "Reconnecting…" screen, a stall
+> watchdog, stop-on-close, a Stop button in the notification, 16 h wake locks and an on-phone debug log.
+> See **[docs/FORK-NOTES.md](docs/FORK-NOTES.md)** for what changed, how we set it up and the known limits.
+
 **Cast your phone's screen to a Yamaha motorcycle TFT dash over Bluetooth** — so you can run
 Waze, Google Maps, or anything else on the bike's built-in display instead of being limited to
 Garmin StreetCross.
@@ -87,7 +93,7 @@ A Kotlin Multiplatform + Compose Multiplatform project; the shared code is in `c
 Requires the Android SDK + JDK 17 (or just Android Studio).
 
 ```bash
-git clone https://github.com/alexandrevega/pillion.git
+git clone https://github.com/HikeAndMap/pillion.git   # this fork (upstream: alexandrevega/pillion)
 cd pillion
 ./gradlew :androidApp:assembleDebug   # -> androidApp/build/outputs/apk/debug/
 ./gradlew :composeApp:testAndroidHostTest   # protocol unit tests (CRC + auth vectors)

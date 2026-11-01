@@ -6,6 +6,23 @@ All notable changes to Pillion are documented here. The format follows
 
 ## [Unreleased]
 
+### HikeAndMap fork (NMAX Tech MAX)
+- **Confirmed on the Yamaha NMAX Tech MAX (Philippines, 2025/2026):** CCU part `006-B3952-01`, 480×234,
+  ~13–16 fps. See `docs/FORK-NOTES.md`.
+- Added: `Reconnecting` state and screen ("Reconnecting to the bike…"); the engine waits for the bike
+  after Start (20 tries) and retries after a drop (10 tries) before giving up with a clear error.
+- Added: ACK stall watchdog (10 s) that drops and reconnects a link the dash stopped acknowledging.
+- Added: on-phone debug log (`pillion-debug.log`, with a bonded-devices snapshot at each Start).
+- Added: Stop button in the notification; closing the app from recents stops the session.
+- Added: keep the screen on (dimmed) during plain mirroring; wake locks now last up to 16 h (were 3 h).
+- Fixed: a final error was overwritten by Idle when the service stopped, hiding why a session failed.
+- Fixed: the failed Bluetooth socket was not closed after a failed connect attempt (leak).
+- Fixed: a second Start while running opened a second RFCOMM link, tore the session down and showed a
+  red error; it is now ignored.
+- Fixed: a dash-helper failure killed a working Bluetooth session; it now falls back to plain mirroring.
+- Fixed: starting the dash-mode watchdog on the main thread froze the UI for up to 15 s.
+- Changed (fork only): the per-launch "Experimental software" popup is disabled.
+
 ## [0.2.0-alpha] - 2026-06-28
 
 Second alpha. iOS joins Android, and a SOLID head-unit architecture lands so the app can drive more than

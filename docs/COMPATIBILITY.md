@@ -18,11 +18,15 @@ Reported working by the community so far:
 | **MT-09 SP (2026)** | Android | ✅ | — | @raccoon_builds |
 | **XSR900 (2025)** | Pixel 9 Pro / Android 16 | ✅ | ~11–12 | @Turbobrallan |
 | **XMAX (2025)** | Galaxy Z Flip5 / Android 15 | ✅ | ~14 | contributor |
+| **NMAX Tech MAX (Philippines, 2025/2026)** — [model page](https://www.yamaha-motor.com.ph/motorcycles/personal-commuter/max-series/nmax-tech-max) | Galaxy A52s 5G (SM-A528B) / Android 14 | ✅ | ~13–16 (7–8 on a busy OsmAnd map) | @HikeAndMap (this fork) |
 
 > **Scooter CCU note.** The XMAX / NMAX scooter CCU (part number `006-B3952-xx`) renders navigation
 > at **480×234**, not the 480×240 the MT-class dashes use. Pillion now detects this from the CCU
 > part number during the handshake and sizes frames automatically — sending 480×240 was what made
 > these dashes show "Connection Error" on entering navigation (issue #7).
+> Confirmed on an NMAX Tech MAX: the dash reports part number `006-B3952-01` and Pillion selects
+> 480×234 by itself. The dash showed "Bluetooth pairing failed" during pairing but Pillion still
+> connected (see [FORK-NOTES.md](FORK-NOTES.md)).
 
 ## Very likely compatible
 
@@ -33,7 +37,7 @@ example:
 - Tracer 9 GT+
 - Niken GT
 - TMAX
-- NMAX (same scooter CCU as the XMAX)
+- NMAX (same scooter CCU as the XMAX — **confirmed** on the NMAX Tech MAX, see above)
 
 **More reports welcome.** If you've tried Pillion on your bike — working or not — please open an
 [issue](../../issues) or post in the [Discord](https://discord.gg/mxNV97QUnB) with your model, phone
