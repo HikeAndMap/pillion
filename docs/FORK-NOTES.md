@@ -6,6 +6,11 @@ on a **Yamaha NMAX Tech MAX** (Philippines, 2025/2026 model —
 and to harden the Android app for long rides. Upstream's design, protocol work and license are
 unchanged; everything here builds on that work. Not affiliated with Yamaha or Garmin.
 
+## Reported upstream
+
+- Compatibility report: [alexandrevega/pillion#21](https://github.com/alexandrevega/pillion/issues/21)
+- Bugs found and fixes available in this fork: [alexandrevega/pillion#22](https://github.com/alexandrevega/pillion/issues/22)
+
 ## Tested on
 
 | Bike | Phone / OS | Result |
