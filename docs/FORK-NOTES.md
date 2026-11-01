@@ -89,7 +89,7 @@ Pillion writes its own log (Pillion messages, Bluetooth, crashes, the handshake 
 /sdcard/Android/data/app.pillion/files/pillion-debug.log      (previous run: pillion-debug.log.1)
 ```
 
-It is capped at ~2 MB and also records the bonded Bluetooth devices at each Start. Pull it with:
+It rotates at ~25 MB (about 60 hours of streaming) and also records the bonded Bluetooth devices at each Start. Pull it with:
 
 ```bash
 adb pull /sdcard/Android/data/app.pillion/files/pillion-debug.log

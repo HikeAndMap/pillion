@@ -21,7 +21,8 @@ import java.util.Locale
  */
 object DebugLogFile {
     private const val FILE_NAME = "pillion-debug.log"
-    private const val MAX_BYTES = 2L * 1024 * 1024
+    // ~400 KB/h of streaming lines: 25 MB (+ one rotated copy) covers a full-day ride.
+    private const val MAX_BYTES = 25L * 1024 * 1024
     private var file: File? = null
     private var started = false
 
