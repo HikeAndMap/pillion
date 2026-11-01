@@ -22,6 +22,11 @@
 > ~13–16 fps (7–8 fps on a busy map). It adds automatic reconnect with a "Reconnecting…" screen, a stall
 > watchdog, stop-on-close, a Stop button in the notification, 16 h wake locks and an on-phone debug log.
 > See **[docs/FORK-NOTES.md](docs/FORK-NOTES.md)** for what changed, how we set it up and the known limits.
+>
+> **⚠️ Experimental — use at your own risk.** Provided as-is, with no warranty. Set up your route while
+> parked and never operate your phone while riding; keep your eyes on the road. You are responsible for
+> riding safely and lawfully. Read **[SAFETY.md](SAFETY.md)**. (This fork does not show the per-launch
+> warning popup; this notice replaces it.)
 
 **Cast your phone's screen to a Yamaha motorcycle TFT dash over Bluetooth** — so you can run
 Waze, Google Maps, or anything else on the bike's built-in display instead of being limited to

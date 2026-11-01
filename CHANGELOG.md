@@ -6,7 +6,10 @@ All notable changes to Pillion are documented here. The format follows
 
 ## [Unreleased]
 
-### HikeAndMap fork (NMAX Tech MAX)
+## [0.2.1-alpha] - 2026-11-01 (HikeAndMap fork, NMAX Tech MAX)
+
+- The in-app update check and source link now point at `HikeAndMap/pillion`.
+- Debug-signed APK on the fork's Releases page (a different signing key than upstream's APKs).
 - **Confirmed on the Yamaha NMAX Tech MAX (Philippines, 2025/2026):** CCU part `006-B3952-01`, 480×234,
   ~13–16 fps. See `docs/FORK-NOTES.md`.
 - Added: `Reconnecting` state and screen ("Reconnecting to the bike…"); the engine waits for the bike

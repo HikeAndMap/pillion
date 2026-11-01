@@ -22,7 +22,7 @@ import app.pillion.core.headunit.HeadUnitProfile
 import app.pillion.core.headunit.HeadUnitRegistry
 
 /** The public GitHub repository — shown in-app so anyone can read the source. */
-const val REPO_URL = "https://github.com/alexandrevega/pillion"
+const val REPO_URL = "https://github.com/HikeAndMap/pillion"
 
 /**
  * App entry point: owns the top-level UI state and routes between bike-selection (first run), Home and

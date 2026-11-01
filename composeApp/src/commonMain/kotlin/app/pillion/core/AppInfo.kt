@@ -10,7 +10,7 @@ object AppInfo {
     val VERSION: String get() = platformAppVersion()
 
     /** GitHub "owner/repo" used for the in-app update check and the source link. */
-    const val REPO = "alexandrevega/pillion"
+    const val REPO = "HikeAndMap/pillion"
 }
 
 /** The platform build's user-facing version string. */

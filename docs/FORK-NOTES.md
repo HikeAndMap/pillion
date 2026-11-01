@@ -51,7 +51,12 @@ Reliability (the same fixes would apply to any bike):
 Personal preference (fork only; not meant for upstream):
 
 - The "Experimental software" popup on every launch is disabled (`showDisclaimer` defaults to false in
-  `App.kt`). The safety text in [SAFETY.md](../SAFETY.md) still applies — read it.
+  `App.kt`). The same notice ("experimental, use at your own risk, never operate your phone while
+  riding") is shown in the README, the GitHub repository description and each release's notes, and the
+  full text in [SAFETY.md](../SAFETY.md) still applies — read it.
+- The in-app update check and source link point at this fork (`HikeAndMap/pillion`), version `0.2.1-alpha`.
+  Release APKs are **debug-signed** with the maintainer's local debug key, so a build from another PC
+  has a different signature and cannot be installed over this one (uninstall first).
 
 ## Using it on an NMAX (what worked for us)
 
