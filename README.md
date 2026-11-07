@@ -19,7 +19,7 @@
 
 > **🍴 HikeAndMap fork.** A fork of [alexandrevega/pillion](https://github.com/alexandrevega/pillion),
 > tested on the **Yamaha NMAX Tech MAX (Philippines, 2025/2026)** — OsmAnd mirrored on the dash at
-> ~13–16 fps (7–8 fps on a busy map). It adds automatic reconnect with a "Reconnecting…" screen, a stall
+> ~13–16 fps (7–8 fps on a busy map); about 13 hours of long rides ran without a drop. It adds automatic reconnect with a "Reconnecting…" screen, a stall
 > watchdog, stop-on-close, a Stop button in the notification, 16 h wake locks and an on-phone debug log.
 > See **[docs/FORK-NOTES.md](docs/FORK-NOTES.md)** for what changed, how we set it up and the known limits.
 >

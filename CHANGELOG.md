@@ -12,6 +12,9 @@ All notable changes to Pillion are documented here. The format follows
 - Debug-signed APK on the fork's Releases page (a different signing key than upstream's APKs).
 - **Confirmed on the Yamaha NMAX Tech MAX (Philippines, 2025/2026):** CCU part `006-B3952-01`, 480×234,
   ~13–16 fps. See `docs/FORK-NOTES.md`.
+- **Long-ride check:** about 13 h of streaming over 7 sessions (longest 2 h 48 min) with no crashes, no
+  drops during a ride and no stall-watchdog triggers.
+- Debug log: full files are kept as numbered `.1`, `.2`, … at 25 MB instead of one 2 MB backup.
 - Added: `Reconnecting` state and screen ("Reconnecting to the bike…"); the engine waits for the bike
   after Start (20 tries) and retries after a drop (10 tries) before giving up with a clear error.
 - Added: ACK stall watchdog (10 s) that drops and reconnects a link the dash stopped acknowledging.

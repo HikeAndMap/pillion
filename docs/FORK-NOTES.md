@@ -24,6 +24,13 @@ What was observed on that bike:
 - **~13–16 fps** on simple screens; **~7–8 fps** on a busy OsmAnd map (≈15 KB/frame — this is the
   Bluetooth link's limit, not a bug). That is plenty for a moving map.
 - Reconnects on its own after the bike is switched off and on again.
+- **Long rides (2–4 Nov 2026):** 7 sessions, about **13 hours** of streaming in total (longest 2 h 48 min),
+  OsmAnd on the dash, phone screen on (dimmed) in an open, shaded compartment with a powerbank. The debug
+  log shows no crashes, ANRs, out-of-memory kills or stall-watchdog triggers, and no drops during a ride:
+  every session ended because the bike was switched off (10 reconnect attempts, about 80 s, then the
+  "gave up" message) or because the user stopped it. Average ~9–10 fps (median 10), 7–10 KB/frame, typical
+  ACK wait a few tens of ms (worst single wait 1.4 s). The rider reported no overheating (temperature is
+  not logged, so that is a report, not a measurement).
 - The dash showed **"Bluetooth pairing failed"** (and an empty `""` name for the phone) while pairing,
   yet Pillion still connected and streamed. Pillion opens an *insecure* RFCOMM socket and the NaviLite
   handshake needs no pairing secret, so the dash's own pairing result did not matter in our tests.
